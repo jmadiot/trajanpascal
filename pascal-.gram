@@ -1,0 +1,81 @@
+Program --> 'program' ProgramName ';'BlockBody '.' 
+
+BlockBody --> [ConstantDefinitionPart] [TypeDefinitionPart] 
+              [VariableDefinitionPart]{ProcedureDefinition} CompoundStatement
+
+ConstantDefinitionPart -->'const' ConstantDefinition {ConstantDefinition}
+
+ConstantDefinition --> ConstantNameDef '=' Constant ';' 
+Constant -> Numeral | ConstantNameUse
+
+TypeDefinitionPart --> 'type' TypeDefinition {TypeDefinition} 
+TypeDefinition --> TypeNameDef '=' NewType ';'
+
+NewType --> NewArrayType | NewRecordType
+
+NewArrayType --> 'array' '[' IndexRange ']' 'of' TypeNameUse
+IndexRange --> Constant '..' Constant
+
+NewRecordType --> 'record' FieldList 'end' 
+FieldList --> RecordSection {';' RecordSection} 
+RecordSection -->  FieldNameDefList ':' TypeNameUse
+
+FieldNameDefList --> FieldNameDef {',' FieldNameDef}
+
+VariableDefinitionPart --> 'var' VariableDefinition {VariableDefinition} 
+VariableDefinition --> VariableNameDefList ':' TypeNameUse ';'
+
+VariableNameDefList --> VariableNameDef {',' VariableNameDef}
+
+Expression --> SimpleExpression [RelationalOperator SimpleExpression]
+RelationalOperator--> '<' | '=' | '>' | '<=' | '<>' | '>=' 
+
+SimpleExpression --> [SignOperator] Term | SimpleExpression AddingOperator Term
+SignOperator--> '+' | '-' 
+AddingOperator--> '+' | '-' | 'or'
+
+Term --> Factor | Term MultiplyingOperator Factor 
+MultiplyingOperator--> '*' | 'div' | 'mod' | 'and'
+
+Factor -->   Numeral |
+             VariableAccess |
+             '(' Expression ')' |
+	     NotOperator Factor
+NotOperator--> 'not'
+
+VariableAccess--> VariableNameUse |
+		  VariableAccess '[' Expression ']' |
+		  VariableAccess '.'FieldNameUse
+
+Statement --> AssignmentStatement| ProcedureStatement |
+	      IfStatement | WhileStatement | CompoundStatement | Empty
+Empty --> 
+
+AssignmentStatement --> VariableAccess ':=' Expression 
+
+ProcedureStatement-->ProcedureNameUse [ActualParameterList]
+
+ActualParameterList: --> '(' ActualParameters ')' 
+ActualParameters --> ActualParameter {',' ActualParameter} 
+ActualParameter --> Expression
+
+IfStatement-->   'if' Expression 'then' Statement |
+                 'if' Expression 'then' Statement 'else' Statement
+
+WhileStatement --> 'while' Expression 'do' Statement 
+
+CompoundStatement: 'begin' Statement {';' Statement} 'end' .
+
+ProcedureDefinition--> 'procedure' ProcedureNameDef ProcedureBlock ';'
+
+ProcedureBlock --> [FormalParameterList] ';'BlockBody 
+
+FormalParameterList --> '(' ParameterDefinitions ')' 
+
+ParameterDefinitions-->ParameterDefinition {';'ParameterDefinition}
+
+ParameterDefinition--> 'var' ParameterNameDefList ':'TypeNameUse |
+                       ParameterNameDefList ':'TypeNameUse
+
+ParameterNameDefList--> ParameterNameDef | 
+                        ParameterNameDefList ',' ParameterNameDef
