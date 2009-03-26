@@ -1,12 +1,36 @@
-all:compiler
+CAMLC=ocamlc -g
+CAMLLEX=ocamllex
+CAMLYACC=ocamlyacc
 
+all: types.cmi parser.cmi types.cmo parser.cmo lexer.cmo compiler.cmo
+	ocamlc -o compiler lexer.cmo parser.cmo compiler.cmo types.cmo
 
-lexer.ml: parser.ml
-	ocamllex lexer.mll -o lexer.ml
+clean:
+	rm -f *.cmo *.cmi
+	rm -f lexer.ml lexer.mli
+	rm -f parser.ml parser.mli
 
-parser.ml:
-	ocamlyacc parser.mly -o parser.ml
+.SUFFIXES: .mll .mly .mli .ml .cmi .cmo
 
-compiler:parser.ml
-	#?
+.mll.mli:
+	$(CAMLLEX) $<
+
+.mll.ml:
+	$(CAMLLEX) $<
+
+.mly.mli:
+	$(CAMLYACC) $<
+
+.mly.ml:
+	$(CAMLYACC) $<
+
+.mli.cmi:
+	$(CAMLC) -c $(FLAGS) $<
+
+.ml.cmo:
+	$(CAMLC) -c $(FLAGS) $<
+
+.ml.mli:
+	$(CAMLC) -i $(FLAGS) $< > $@
+
 
