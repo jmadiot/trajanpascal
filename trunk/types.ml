@@ -5,8 +5,7 @@ type constant = ConstantNum of int | ConstantId of string;;
 
 type ttype =
 	  ArrayType of constant*constant*identificateur
-	| RecordType of ((identificateur list) * identificateur) list
-	(*RecordType :  [   [a, b, c],             integer      ]  *)
+	| RecordType of (identificateur*identificateur) list
 ;;
 
 type exp =
@@ -34,8 +33,8 @@ and reference =
 ;;
 
 type paramDef =
-	  ParamVar of ((identificateur list) * identificateur)
-	| Param of ((identificateur list) * identificateur)
+	  ParamVar of (identificateur*identificateur) list
+	| Param of (identificateur*identificateur) list
 ;;
 
 

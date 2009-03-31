@@ -19,10 +19,10 @@ clean:
 	$(CAMLLEX) $<
 
 .mly.mli:
-	$(CAMLYACC) $<
+	$(CAMLYACC) -v $<
 
 .mly.ml:
-	$(CAMLYACC) $<
+	$(CAMLYACC) -v $<
 
 .mli.cmi:
 	$(CAMLC) -c $(FLAGS) $<
