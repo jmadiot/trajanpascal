@@ -55,11 +55,12 @@ let addlines lexbuf n =
 }
 
 
-rule analyse = parse
-	| ['a'-'z' 'A'-'Z']['a'-'z' 'A'-'Z' '0'-'9']* as id
+rule analyse action = parse
+	| ['_' 'a'-'z' 'A'-'Z']['_' 'a'-'z' 'A'-'Z' '0'-'9']* as id
 	{
+		if action=1 then print_endline id;
 		try
-			constr_of_keywords id (* keyword réservé *)
+			constr_of_keywords (String.lowercase id) (* keyword réservé *)
 		with
 			Not_found -> ID id (* identificateur quelconque *)
 	}
@@ -69,7 +70,7 @@ rule analyse = parse
 		{
 			let nlines = string_count '\n' comment in
 			let _ = addlines lexbuf nlines in
-			analyse lexbuf
+			analyse action lexbuf
 		} 
 	| ":=" {ASSIGN} 
 	
@@ -91,11 +92,11 @@ rule analyse = parse
 	| '[' {BRA}
 	| ']' {CKET}
 	
-	| [' ' '\t'] {analyse lexbuf} 
+	| [' ' '\t'] {analyse action lexbuf} 
 	| '\n'
 		{
 			let _ = addlines lexbuf 1 in
-			analyse lexbuf
+			analyse action lexbuf
 		} 
 	| _ as c
 		{

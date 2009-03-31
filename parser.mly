@@ -46,7 +46,7 @@ blockBody :
 	variableDefinitionPart_opt
 	procedureDefinition_etoile
 	compoundStatement
-	{ B ($1, $2, $3, $4, $5) }
+	{ B ($1, $2, $3, List.rev $4, $5) }
 ;
 
 
@@ -66,12 +66,12 @@ variableDefinitionPart_opt:
 ;
 
 procedureDefinition_etoile:
-	  procedureDefinition_etoile procedureDefinition { $2::$1 }
+	  procedureDefinition_etoile procedureDefinition { List.rev ($2 :: $1) }
 	| empty { [] }
 ;
 
 constantDefinitionPart :
-	CONST constantDefinition constantDefinition_etoile { $2 :: $3 }
+	CONST constantDefinition constantDefinition_etoile { $2 :: (List.rev $3) }
 ;
 
 constantDefinition_etoile :
@@ -84,12 +84,12 @@ constantDefinition :
 ;
 
 constant :
-	  NUM { ConstantNum $1 }
+	  numeral { ConstantNum $1 }
 	| ID { ConstantId $1 }
 ;
 
 typeDefinitionPart :
-	TYPE typeDefinition typeDefinition_etoile { $2 :: $3 }
+	TYPE typeDefinition typeDefinition_etoile { $2 :: (List.rev $3) }
 ;
 
 typeDefinition_etoile:
@@ -115,24 +115,21 @@ indexRange :
 ;
 
 newRecordType :
-	RECORD fieldList END { $2 }
+	  RECORD fieldList END { List.rev $2 }
+	| RECORD fieldList SEMICOLON END { List.rev $2 }
 ;
 
-fieldList :
-	semicolon_recordSection_plus { $1 } 
-;
-
-semicolon_recordSection_plus:
-	  semicolon_recordSection_plus SEMICOLON recordSection { $3 :: $1 }
-	| recordSection { [$1] }
+fieldList:
+	  fieldList SEMICOLON recordSection { $1 @ $3 }
+	| recordSection { $1 }
 ;
 
 recordSection :
-	fieldNameDefList COLON ID { ($1, $3) }
+	fieldNameDefList COLON ID { List.map (fun v -> (v, $3)) $1 }
 ;
 
 fieldNameDefList :
-	comma_fieldNameDef_plus { $1 }
+	comma_fieldNameDef_plus { List.rev $1 }
 ;
 
 comma_fieldNameDef_plus:
@@ -145,12 +142,12 @@ variableDefinitionPart :
 ;
 
 variableDefinition_plus:
-	  variableDefinition_plus variableDefinition { $2 :: $1 }
+	  variableDefinition_plus variableDefinition { List.rev ($2 :: $1) }
 	| variableDefinition { [$1] }
 ;
 
 variableDefinition :
-	variableNameDefList COLON ID SEMICOLON { ($1, $3) }
+	variableNameDefList COLON ID SEMICOLON { (List.rev $1, $3) }
 ;
 
 variableNameDefList :
@@ -186,10 +183,15 @@ term :
 ;
 
 factor :
-	  NUM { Num $1 }
+	  numeral { Num $1 }
 	| variableAccess { Ref $1 }
 	| PAREN expression THESIS { $2 }
 	| notOperator factor { Not $2 }
+;
+
+numeral :
+	  NUM {$1}
+	| MINUS NUM {$2}
 ;
 
 notOperator :
@@ -223,7 +225,7 @@ procedureStatement :
 
 actualParameterList:
 	  empty { [] }
-	| PAREN actualParameters THESIS { $2 }
+	| PAREN actualParameters THESIS { List.rev $2 }
 ;
 
 actualParameters :
@@ -245,7 +247,7 @@ whileStatement :
 ;
 
 compoundStatement :
-	BEGIN statement_semicolon_plus END { $2 }
+	BEGIN statement_semicolon_plus END { List.rev $2 }
 ;
 
 statement_semicolon_plus:
@@ -262,7 +264,7 @@ procedureBlock :
 ;
 
 formalParameterList_opt :
-	  PAREN parameterDefinitions THESIS { $2 }
+	  PAREN parameterDefinitions THESIS { List.rev $2 }
 	| empty { [] }
 ;
 
@@ -270,11 +272,20 @@ parameterDefinitions :
 	  parameterDefinition { [$1] }
 	| parameterDefinitions SEMICOLON parameterDefinition { $3 :: $1 }
 ;
+/*
+parameterDefinition :
+	  VAR parameterNameDefList COLON ID { ParamVar (List.rev $2, $4) }
+	| parameterNameDefList COLON ID  { Param (List.rev $1, $3) }
+;
+*/
 
 parameterDefinition :
-	  VAR parameterNameDefList COLON ID { ParamVar ($2, $4) }
-	| parameterNameDefList COLON ID  { Param ($1, $3) }
+	  VAR parameterNameDefList COLON ID { ParamVar (List.map (fun x -> (x,$4)) (List.rev $2)) }
+	| parameterNameDefList COLON ID  { Param (List.map (fun x -> (x,$3)) (List.rev $1)) }
 ;
+
+
+
 
 parameterNameDefList :
 	  ID { [$1] }

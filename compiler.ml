@@ -3,7 +3,10 @@ open Types;;
 
 let print_tab n = print_string (String.make n '\t');;
 
-let print_constant t = print_string "(constant)";;
+let print_constant = function
+	| ConstantNum i -> print_int i;
+	| ConstantId s -> Printf.printf "C(%s)" s
+;;
 
 let print_ttype depth = function
 	  ArrayType (a,b,id) ->
@@ -13,16 +16,17 @@ let print_ttype depth = function
 	  	print_constant b;
 	  	print_string ("] of " ^ id);
 	| RecordType idstypes ->
+		print_newline();
+		print_tab (depth+1);
+		print_endline "RECORD";
 		List.iter
-		(function (ids, t) ->
-			List.iter (
-				fun id ->
-					print_tab (depth+1);
-					print_string (id ^ " : " ^ t ^ "\n");
-			)
-			ids
+		(function (id, t) ->
+			print_tab (depth+2);
+			print_string (id ^ " : " ^ t ^ "\n");
 		)
-		idstypes
+		idstypes;
+		print_tab (depth+1);
+		print_endline "END";
 ;;
 
 let rec print_ref = function
@@ -89,6 +93,13 @@ let rec print_statement depth = function
 		print_endline "NOP !\n";
 ;;
 
+let print_param = function
+	  ParamVar params ->
+	  	List.iter (function (v,t) -> Printf.printf "VAR %s : %s, " v t) params;
+	| Param params->
+	  	List.iter (function (v,t) -> Printf.printf "VAR %s : %s, " v t) params;
+;;
+
 let print_body =
 	let rec print_body_depth depth (B (c, t, v, p, s)) =
 		(match c with
@@ -133,14 +144,16 @@ let print_body =
 		(match p with
 			[] -> ()
 			| _ ->
+				print_tab depth;
 				print_endline "PROCEDURES :";
 				List.iter (
 					fun (id, params, body) ->
 						print_tab (depth+1);
 						print_string (id ^ "(");
-						List.iter ( fun _ -> 
-							print_string "PARAMS"
-						) params;
+						List.iter 
+							(*( fun _ -> print_string "PARAMS")*)
+							print_param
+							params;
 						print_string ")\n";
 						print_body_depth (depth+1) body;
 				) p
@@ -148,6 +161,8 @@ let print_body =
 		(match s with
 			[] -> ()
 			| _ ->
+				print_tab depth;
+				print_endline "CS :";
 				List.iter (print_statement (depth+1)) s
 		);
 	in
@@ -174,15 +189,15 @@ exception E of body;;
 
 let main () =
 	let lexbuf = Lexing.from_channel cin in
-	(*try*)
-		let ast = Parser.input Lexer.analyse lexbuf in
+	try
+		let ast = Parser.input (Lexer.analyse 0) lexbuf in
 		print_body ast
-	(*with
+	with
 		Parsing.Parse_error ->
 			let p = lexbuf.Lexing.lex_curr_p in
 			Printf.fprintf stderr "Syntax error at line %d, col %d\n"
 				p.Lexing.pos_lnum (p.Lexing.pos_cnum-p.Lexing.pos_bol);
-			failwith "Banane"*)
+
 ;;
 
 main();;
