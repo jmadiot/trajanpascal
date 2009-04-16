@@ -2,13 +2,14 @@ CAMLC=ocamlc -g
 CAMLLEX=ocamllex
 CAMLYACC=ocamlyacc
 
-all: types.cmi parser.cmi types.cmo parser.cmo lexer.cmo compiler.cmo
-	ocamlc -o compiler lexer.cmo parser.cmo compiler.cmo types.cmo
+all: types.cmi parser.cmi types.cmo parser.cmo lexer.cmo typage.cmo pprint.cmo   compiler.cmo
+	ocamlc -o compiler lexer.cmo parser.cmo types.cmo typage.cmo pprint.cmo  compiler.cmo
 
 clean:
 	rm -f *.cmo *.cmi
 	rm -f lexer.ml lexer.mli
 	rm -f parser.ml parser.mli
+	rm -f compiler
 
 .SUFFIXES: .mll .mly .mli .ml .cmi .cmo
 
