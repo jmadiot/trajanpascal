@@ -1,62 +1,74 @@
+type pos
 
-type identificateur = string;;
 
-type constant = ConstantNum of int | ConstantId of string;;
+type 'a loc = {
+	birth : Lexing.position;
+	death : Lexing.position;
+	e : 'a;
+}
+
+type identificateur = string loc;;
+
+type constant = ConstantNum of int loc | ConstantId of identificateur loc;;
 
 type ttype =
-	  ArrayType of constant*constant*identificateur
-	| RecordType of (identificateur*identificateur) list
+	  ArrayType of (constant*constant*identificateur) loc
+	| RecordType of (identificateur*identificateur) list loc
 ;;
 
 type exp =
-	  Ref of reference
-	| Num of int
-	| Plus of exp*exp
-	| Minus of exp*exp
-	| UMinus of exp
-	| Div of exp*exp
-	| Mod of exp*exp
-	| And of exp*exp
-	| Or of exp*exp
-	| Not of exp
-	| Times of exp*exp
-	| Lt of exp*exp
-	| Eq of exp*exp
-	| Gt of exp*exp
-	| Le of exp*exp
-	| Ne of exp*exp
-	| Ge of exp*exp
-and reference = 
-	  VarAccess of identificateur 
-	| ArrayAccess of reference * exp
-	| RecordAccess of reference * identificateur
+	  Ref of reference loc
+	| Num of int loc
+	| Plus of (exp*exp) loc
+	| Minus of (exp*exp) loc
+	| UMinus of exp loc
+	| Div of (exp*exp) loc
+	| Mod of (exp*exp) loc
+	| And of (exp*exp) loc
+	| Or of (exp*exp) loc
+	| Not of exp loc
+	| Times of (exp*exp) loc
+	| Lt of (exp*exp) loc
+	| Eq of (exp*exp) loc
+	| Gt of (exp*exp) loc
+	| Le of (exp*exp) loc
+	| Ne of (exp*exp) loc
+	| Ge of (exp*exp) loc
+and reference =
+	  VarAccess of identificateur loc
+	| ArrayAccess of (reference * exp) loc
+	| RecordAccess of (reference * identificateur) loc
 ;;
 
 type paramDef =
-	  ParamVar of (identificateur*identificateur) list
-	| Param of (identificateur*identificateur) list
+	  ParamVar of (identificateur*identificateur) loc
+	| Param of (identificateur*identificateur) loc
 ;;
 
 
 type statement =
-	  Assignment of reference * exp
-	| CallProcedure of identificateur * (exp list)
-	| IfThen of exp * statement
-	| IfThenElse of exp * statement * statement
-	| While of exp * statement
-	| CompoundStatement of statement list (* à dérouler *)
-	| Nop
+	  Assignment of (reference * exp) loc
+	| CallProcedure of (identificateur * (exp list)) loc
+	| IfThen of (exp * statement) loc 
+	| IfThenElse of (exp * statement * statement) loc
+	| While of (exp * statement) loc
+	| CompoundStatement of statement list loc (* à dérouler ? (non ?) *)
+	| Nop of unit loc
 ;;
 
 type procDef = 
-	  identificateur
-	* (paramDef list)
-	* body
+	  identificateur loc
+	* (paramDef list) loc
+	* body loc
 and body = B of
-	  (identificateur * constant) list   (*constantes*)
-	* (identificateur * ttype) list   (* types *)
-	* ((identificateur list) * identificateur) list (* var *)
-	* procDef list
-	* statement list
+	  (identificateur * constant) list loc   (*constantes*)
+	* (identificateur * ttype) list loc   (* types *)
+	* (identificateur * identificateur) list loc (* var *)
+	* procDef list loc
+	* statement list loc
 ;;
+
+type program = identificateur loc * body loc;;
+
+
 
