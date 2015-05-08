@@ -1,0 +1,1 @@
+Trajanpascal is a restricted pascal compiler to the trajan machine assembler.
